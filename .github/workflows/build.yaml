@@ -25,11 +25,12 @@ jobs:
     - name: 'Use gcloud CLI'
       run: 'gcloud info'
 
-    - name: build and push the docker image
+    - name: 'Build and push the docker image to Google Artifact Registry'
       env:
         GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
       run: |
         gcloud auth configure-docker asia-southeast1-docker.pkg.dev
         docker build -t asia-southeast1-docker.pkg.dev/$GOOGLE_PROJECT/k8s-demo-docker/app-demo:${{ matrix.version }} ./\${{ matrix.version }}
         docker push asia-southeast1-docker.pkg.dev/$GOOGLE_PROJECT/k8s-demo-docker/app-demo:${{ matrix.version }}
+        
 
