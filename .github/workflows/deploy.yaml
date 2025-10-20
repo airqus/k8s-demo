@@ -43,7 +43,7 @@ jobs:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
           VERSION: ${{ github.event.inputs.version }}
         run: |
-          sed -i "s|IMAGE_PLACEHOLDER|asia-southeast1-docker.pkg.dev/$GOOGLE_PROJECT/k8s-demo-docker/app-demo:$VERSION|g" ./deployment.yaml
+          sed -i "s|IMAGE_PLACEHOLDER|asia-southeast1-docker.pkg.dev/$GOOGLE_PROJECT/k8s-demo-docker/app-demo:${{ github.event.inputs.version }}|g" ./deployment.yaml
 
       - name: Apply manifest to GKE
         run: |
