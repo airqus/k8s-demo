@@ -1,0 +1,51 @@
+name: Deploy  to GKE
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Select which version to deploy'
+        required: true
+        type: choice
+        options:
+          - v1
+          - v2
+          - v3
+        default: v1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ✅ Updated GCP authentication
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v3'
+
+      - name: 'Use gcloud CLI'
+        run: gcloud info
+
+      - name: Get GKE credentials
+        env:
+          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} \
+            --zone ${{ secrets.GKE_ZONE }} \
+            --project $GOOGLE_PROJECT
+
+      - name: Deploy to GKE
+        env:
+          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          kubectl set image deployment/app-demo \
+            app-demo=asia-southeast1-docker.pkg.dev/$GOOGLE_PROJECT/k8s-demo-docker/app-demo:$VERSION \
+            -n default
+          kubectl rollout status deployment/app-demo -n default
