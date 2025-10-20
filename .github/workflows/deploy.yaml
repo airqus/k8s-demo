@@ -47,5 +47,5 @@ jobs:
 
       - name: Apply manifest to GKE
         run: |
-          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f ./deployment.yaml
           kubectl rollout status deployment/app-demo -n default
