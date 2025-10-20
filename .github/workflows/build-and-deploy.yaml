@@ -12,7 +12,7 @@ jobs:
     
     steps:
     - name: code checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v0
 
     - name: install the gcloud cli
       uses: google-github-actions/setup-gcloud@v3
