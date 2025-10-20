@@ -28,6 +28,11 @@ jobs:
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v3'
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+
+      - name: 'Verify plugin'
+        run: gke-gcloud-auth-plugin --version
 
       - name: 'Use gcloud CLI'
         run: gcloud info
