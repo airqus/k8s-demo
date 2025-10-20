@@ -3,15 +3,24 @@ name: Deploy via Deployment YAML
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Select which version to deploy'
+      action:
+        description: 'Choose whether to deploy a version or rollback'
         required: true
+        type: choice
+        options:
+          - deploy
+          - rollback
+        default: deploy
+      version:
+        description: 'Select version to deploy (only used if action=deploy)'
+        required: false
         type: choice
         options:
           - v1
           - v2
           - v3
         default: v1
+
 
 jobs:
   deploy:
@@ -43,11 +52,29 @@ jobs:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
           VERSION: ${{ github.event.inputs.version }}
         run: |
-          sed -i "s|PROJECT_ID|${{ secrets.GOOGLE_PROJECT }}|g" ./deployment.yaml
-          sed -i "s|IMAGE_PLACEHOLDER|${{ github.event.inputs.version }}|g" ./deployment.yaml
-          cat ./deployment.yaml
+            if [ "$ACTION" = "deploy" ]; then
+              echo "Deploying version $VERSION..."
+  
+              # Replace placeholder in app deployment
+              sed -i "s|PROJECT_ID|${{ secrets.GOOGLE_PROJECT }}|g" ./deployment.yaml
+              sed -i "s|IMAGE_PLACEHOLDER|${{ github.event.inputs.version }}|g" ./deployment.yaml
+  
+              # Apply app deployment
+              kubectl apply -f ./deployment.yaml
+              kubectl rollout status deployment/app-demo -n default
+  
+              # Deploy Postgres only if version is v3
+              if [ "$VERSION" = "v3" ]; then
+                echo "Deploying Postgres for v3..."
+                kubectl apply -f ./postgres.yaml
+                kubectl rollout status deployment/postgres -n default
+              fi
+  
+            else
+              echo "Rolling back deployment..."
+              kubectl rollout undo deployment/app-demo -n default
+              kubectl rollout status deployment/app-demo -n default
+            fi
 
-      - name: Apply manifest to GKE
-        run: |
-          kubectl apply -f ./deployment.yaml
-          kubectl rollout status deployment/app-demo -n default
+          
+
