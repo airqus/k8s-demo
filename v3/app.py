@@ -12,7 +12,7 @@ def log_access():
             dbname=os.getenv("DB_NAME", "demo"),
             user=os.getenv("DB_USER", "demo"),
             password=os.getenv("DB_PASS", "demo"),
-            host=os.getenv("DB_HOST", "localhost"),
+            host=os.getenv("DB_HOST", "postgres"),   # 👈 default to Service name
             port=os.getenv("DB_PORT", "5432")
         )
         cur = conn.cursor()
@@ -23,8 +23,10 @@ def log_access():
                 timestamp TIMESTAMP
             )
         """)
-        cur.execute("INSERT INTO access_log (ip, timestamp) VALUES (%s, %s)",
-                    (request.remote_addr, datetime.datetime.now()))
+        cur.execute(
+            "INSERT INTO access_log (ip, timestamp) VALUES (%s, %s)",
+            (request.remote_addr, datetime.datetime.now())
+        )
         conn.commit()
         cur.close()
         conn.close()
