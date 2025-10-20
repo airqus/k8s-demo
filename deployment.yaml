@@ -18,6 +18,18 @@ spec:
         image: asia-southeast1-docker.pkg.dev/PROJECT_ID/k8s-demo-docker/app-demo:IMAGE_PLACEHOLDER
         ports:
         - containerPort: 5000
+        env:
+        - name: DB_HOST
+          value: postgres
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: demo
+        - name: DB_USER
+          value: demo
+        - name: DB_PASS
+          value: demo
+
 ---
 apiVersion: v1
 kind: Service
