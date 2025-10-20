@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-demo
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app-demo
+  template:
+    metadata:
+      labels:
+        app: app-demo
+    spec:
+      containers:
+      - name: app-demo
+        image: asia-southeast1-docker.pkg.dev/PROJECT_ID/k8s-demo-docker/app-demo:IMAGE_PLACEHOLDER
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-demo-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: app-demo
+  ports:
+  - port: 80
+    targetPort: 80
