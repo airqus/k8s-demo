@@ -26,7 +26,7 @@ spec:
           done
       containers:
       - name: app-demo
-        image: asia-southeast1-docker.pkg.dev/PROJECT_ID/k8s-demo-docker/app-demo:v3
+        image: asia-southeast1-docker.pkg.dev/PROJECT_ID/k8s-demo-docker/app-demo:IMAGE_PLACEHOLDER
         ports:
         - containerPort: 5000
         env:
