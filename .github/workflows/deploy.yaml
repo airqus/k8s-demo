@@ -50,6 +50,7 @@ jobs:
       - name: Update deployment.yaml with selected version
         env:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+          ACTION: ${{ github.event.inputs.action }}
           VERSION: ${{ github.event.inputs.version }}
         run: |
             if [ "$ACTION" = "deploy" ]; then
@@ -75,6 +76,4 @@ jobs:
               kubectl rollout undo deployment/app-demo -n default
               kubectl rollout status deployment/app-demo -n default
             fi
-
-          
 
