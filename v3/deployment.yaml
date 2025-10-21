@@ -18,6 +18,16 @@ spec:
       labels:
         app: app-demo
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - app-demo
+            topologyKey: "kubernetes.io/hostname"
       initContainers:
       - name: wait-for-postgres
         image: postgres:15
