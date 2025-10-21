@@ -31,7 +31,7 @@ spec:
         - containerPort: 5000
         env:
         - name: DB_HOST
-          value: postgres.default.svc.cluster.local  # ← Use FQDN
+          value: postgres.default.svc.cluster.local
         - name: DB_PORT
           value: "5432"
         - name: DB_NAME
@@ -40,3 +40,16 @@ spec:
           value: demo
         - name: DB_PASS
           value: demo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-demo-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: app-demo
+  ports:
+  - port: 80
+    targetPort: 5000
