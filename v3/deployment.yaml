@@ -48,6 +48,7 @@ metadata:
   namespace: default
 spec:
   type: LoadBalancer
+  externalTrafficPolicy: Local
   selector:
     app: app-demo
   ports:
