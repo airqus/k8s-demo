@@ -1,5 +1,4 @@
 name: Deploy via Deployment YAML
-
 on:
   workflow_dispatch:
     inputs:
@@ -20,25 +19,20 @@ on:
           - v2
           - v3
         default: v1
-
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v3'
         with:
           install_components: 'gke-gcloud-auth-plugin'
-
       - name: Get GKE credentials
         env:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
@@ -56,20 +50,27 @@ jobs:
             if [ "$ACTION" = "deploy" ]; then
               echo "Deploying version $VERSION..."
       
-              # Deploy Postgres FIRST if version is v3
+              # Set deployment file path based on version
               if [ "$VERSION" = "v3" ]; then
+                DEPLOYMENT_FILE="./v3/deployment.yaml"
+                echo "Using deployment file: $DEPLOYMENT_FILE"
+                
+                # Deploy Postgres FIRST for v3
                 echo "Deploying Postgres for v3..."
                 kubectl apply -f ./v3/postgres.yaml
                 echo "Waiting for Postgres to be ready..."
                 kubectl wait --for=condition=ready pod -l app=postgres -n default --timeout=120s
+              else
+                DEPLOYMENT_FILE="./deployment.yaml"
+                echo "Using deployment file: $DEPLOYMENT_FILE"
               fi
       
-              # Replace placeholder in app deployment
-              sed -i "s|PROJECT_ID|${{ secrets.GOOGLE_PROJECT }}|g" ./deployment.yaml
-              sed -i "s|IMAGE_PLACEHOLDER|${{ github.event.inputs.version }}|g" ./deployment.yaml
+              # Replace placeholders in the selected deployment file
+              sed -i "s|PROJECT_ID|${{ secrets.GOOGLE_PROJECT }}|g" $DEPLOYMENT_FILE
+              sed -i "s|IMAGE_PLACEHOLDER|${{ github.event.inputs.version }}|g" $DEPLOYMENT_FILE
       
               # Apply app deployment
-              kubectl apply -f ./deployment.yaml
+              kubectl apply -f $DEPLOYMENT_FILE
               kubectl rollout status deployment/app-demo -n default
       
             else
@@ -77,4 +78,3 @@ jobs:
               kubectl rollout undo deployment/app-demo -n default
               kubectl rollout status deployment/app-demo -n default
             fi
-    
