@@ -46,7 +46,7 @@ jobs:
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} \
             --zone ${{ secrets.GKE_ZONE }} \
             --project $GOOGLE_PROJECT
-
+  
       - name: Update deployment.yaml with selected version
         env:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
@@ -55,25 +55,26 @@ jobs:
         run: |
             if [ "$ACTION" = "deploy" ]; then
               echo "Deploying version $VERSION..."
-  
-              # Replace placeholder in app deployment
-              sed -i "s|PROJECT_ID|${{ secrets.GOOGLE_PROJECT }}|g" ./deployment.yaml
-              sed -i "s|IMAGE_PLACEHOLDER|${{ github.event.inputs.version }}|g" ./deployment.yaml
-  
-              # Apply app deployment
-              kubectl apply -f ./deployment.yaml
-              kubectl rollout status deployment/app-demo -n default
-  
-              # Deploy Postgres only if version is v3
+      
+              # Deploy Postgres FIRST if version is v3
               if [ "$VERSION" = "v3" ]; then
                 echo "Deploying Postgres for v3..."
                 kubectl apply -f ./v3/postgres.yaml
-                kubectl rollout status deployment/postgres -n default
+                echo "Waiting for Postgres to be ready..."
+                kubectl wait --for=condition=ready pod -l app=postgres -n default --timeout=120s
               fi
-  
+      
+              # Replace placeholder in app deployment
+              sed -i "s|PROJECT_ID|${{ secrets.GOOGLE_PROJECT }}|g" ./deployment.yaml
+              sed -i "s|IMAGE_PLACEHOLDER|${{ github.event.inputs.version }}|g" ./deployment.yaml
+      
+              # Apply app deployment
+              kubectl apply -f ./deployment.yaml
+              kubectl rollout status deployment/app-demo -n default
+      
             else
               echo "Rolling back deployment..."
               kubectl rollout undo deployment/app-demo -n default
               kubectl rollout status deployment/app-demo -n default
             fi
-
+    
