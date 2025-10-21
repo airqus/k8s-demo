@@ -4,7 +4,7 @@ metadata:
   name: app-demo
   namespace: default
 spec:
-  replicas: 4
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
