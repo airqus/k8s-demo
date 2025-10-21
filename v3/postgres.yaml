@@ -23,14 +23,36 @@ spec:
           value: demo
         - name: POSTGRES_PASSWORD
           value: demo
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         ports:
         - containerPort: 5432
+        # Add readiness probe
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - demo
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+        # Add liveness probe
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - demo
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
         volumeMounts:
         - name: postgres-storage
           mountPath: /var/lib/postgresql/data
-  volumes:
-  - name: postgres-storage
-    emptyDir: {}   # ephemeral storage; replace with PersistentVolumeClaim for production
+      volumes:
+      - name: postgres-storage
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
