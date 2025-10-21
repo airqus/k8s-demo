@@ -4,12 +4,12 @@ metadata:
   name: app-demo
   namespace: default
 spec:
-  replicas: 4
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 25%
-      maxSurge: 25%
+      maxUnavailable: 0
+      maxSurge: 2
   selector:
     matchLabels:
       app: app-demo
